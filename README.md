@@ -1,19 +1,19 @@
-# Hazard Watch MY
+# Outlook MY
 
-A glanceable weather-hazard app for Malaysia — today's conditions, a 7-day forecast strip, active MET Malaysia warnings, and recent tremors, switchable across six locations (Kuala Lumpur, Penang, Kedah, Perlis, Kelantan, Johor).
+A single daily outlook for Malaysia. Pick a location and it gives you one verdict — Clear to go, Hazy conditions, Wet weather likely, or Storm risk today — built from that location's forecast, active MET Malaysia warnings, and recent seismic activity, with a "why?" panel to see the reasoning behind it. A "Getting around today" card follows with what today's conditions mean for driving (fuel prices) and public transport (rail/bus ridership).
 
-Built as part of an exercise comparing [data.gov.my](https://data.gov.my) against [data.gov.sg](https://data.gov.sg), as a companion piece to Puddlewatch SG.
+Six locations: Kuala Lumpur, Penang, Kedah, Perlis, Kelantan, Johor.
 
-## Data source
+Built as part of an exercise comparing [data.gov.my](https://data.gov.my) against [data.gov.sg](https://data.gov.sg).
 
-All content is a snapshot from `api.data.gov.my`, documented at the [Weather API reference](https://developer.data.gov.my/realtime-api/weather):
+## Data sources
 
-- `GET /weather/forecast` — 7-day forecast
+All content is a snapshot from `api.data.gov.my`:
+
+- `GET /weather/forecast` — 7-day forecast ([reference](https://developer.data.gov.my/realtime-api/weather))
 - `GET /weather/warning` — active weather warnings
 - `GET /weather/warning/earthquake` — recent seismic events
+- `GET /data-catalogue?id=fuelprice` — weekly fuel prices
+- `GET /data-catalogue?id=ridership_headline` — daily rail/bus ridership (published ~6 weeks behind)
 
-This is a static snapshot, not a live-polling app — see the field notes for why.
-
-## Notes
-
-Technical, data-quality, and platform-comparison findings from building this are tracked separately in **MY Field Notes**.
+This is a static snapshot, not a live-polling app — the underlying findings on why are tracked in a separate field-notes log.
