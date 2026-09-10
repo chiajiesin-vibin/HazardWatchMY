@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hazard Watch MY</title>
-<meta name="description" content="A glanceable weather-hazard app for Malaysia — today's conditions, 7-day icons, active warnings, and nearby tremors, switchable by location.">
+<meta name="description" content="An animated, glanceable weather-hazard app for Malaysia — condition-driven backgrounds, 7-day icons, warnings, tremors, plus a Malaysia Today strip (fuel prices, rail ridership).">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
   :root{
@@ -68,19 +68,59 @@
   .pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px;scrollbar-width:none;}
   .pills::-webkit-scrollbar{display:none;}
   .pill{
-    flex:0 0 auto;font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:13px;
-    padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    flex:0 0 auto;display:flex;align-items:center;gap:6px;
+    font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:13px;
+    padding:7px 14px 7px 10px;border-radius:999px;border:1px solid var(--line);
     background:var(--surface);color:var(--muted);cursor:pointer;white-space:nowrap;
-    transition:background .15s, color .15s, border-color .15s;
+    transition:background .15s, color .15s, border-color .15s, transform .15s;
   }
+  .pill:hover{transform:translateY(-1px);}
   .pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
   .pill.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+  .pill-icon{width:15px;height:15px;flex:0 0 auto;opacity:.8;}
 
   /* Hero */
   .hero{
+    position:relative;overflow:hidden;
     background:var(--surface);border-radius:20px;box-shadow:var(--shadow);
     padding:22px 22px 18px;margin-bottom:14px;
   }
+  .hero-fx{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.6;transition:opacity .4s;}
+  .hero-content{position:relative;z-index:1;}
+  .hero-content.fading{opacity:0;transform:translateY(3px);}
+  .hero-content{transition:opacity .18s ease, transform .18s ease;}
+
+  .fx-clear{background:radial-gradient(circle at 88% 10%, var(--accent) 0%, transparent 55%);}
+  .fx-haze{
+    background-image:
+      repeating-linear-gradient(100deg, var(--muted) 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(100deg, var(--muted) 0 2px, transparent 2px 70px);
+    background-position:0 20%, 30px 60%;
+    opacity:.16;
+  }
+  .fx-rain{
+    background-image:repeating-linear-gradient(112deg, transparent 0 7px, var(--info) 7px 8px, transparent 8px 26px);
+    opacity:.22;
+  }
+  .fx-storm{
+    background-image:repeating-linear-gradient(112deg, transparent 0 7px, var(--info) 7px 8px, transparent 8px 26px);
+    opacity:.26;
+  }
+  .fx-storm::after{
+    content:"";position:absolute;inset:0;background:rgba(255,255,240,0.6);opacity:0;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .fx-clear{animation:glow 5s ease-in-out infinite alternate;}
+    .fx-haze{animation:drift 22s linear infinite;}
+    .fx-rain{animation:rainfall .55s linear infinite;}
+    .fx-storm{animation:rainfall .4s linear infinite;}
+    .fx-storm::after{animation:flash 5s ease-in-out infinite;}
+  }
+  @keyframes glow{ from{transform:scale(1);opacity:.5;} to{transform:scale(1.18);opacity:.85;} }
+  @keyframes drift{ from{background-position:0 20%, 30px 60%;} to{background-position:220px 20%, 250px 60%;} }
+  @keyframes rainfall{ from{background-position:0 0;} to{background-position:-14px 34px;} }
+  @keyframes flash{ 0%,90%,100%{opacity:0;} 92%{opacity:.4;} 93.5%{opacity:0;} 95%{opacity:.6;} 96.5%{opacity:0;} }
+
   .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
   .hero-date{font-size:13px;color:var(--muted);margin:0 0 2px;}
   .hero-loc{font-size:20px;font-weight:700;margin:0;text-wrap:balance;}
@@ -92,10 +132,9 @@
 
   /* 7-day strip */
   .strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:16px;}
-  .day{
-    text-align:center;padding:10px 2px 8px;border-radius:12px;
-  }
+  .day{text-align:center;padding:10px 2px 8px;border-radius:12px;cursor:default;transition:background .15s;}
   .day.today{background:var(--accent-bg);}
+  .day:hover{background:var(--surface-2);}
   .day-name{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;}
   .day-icon{width:22px;height:22px;margin:0 auto 6px;color:var(--ink);}
   .day-hi{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;}
@@ -105,21 +144,21 @@
   h2.section{
     font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.1em;
     text-transform:uppercase;color:var(--muted);margin:22px 4px 8px;
+    display:flex;align-items:center;justify-content:space-between;
   }
+  h2.section .hint{font-size:10px;letter-spacing:0.02em;text-transform:none;color:var(--muted);opacity:.75;}
 
   /* Warning cards */
-  .warn{
-    background:var(--surface);border-radius:16px;box-shadow:var(--shadow);
-    padding:14px 16px;margin-bottom:10px;
-  }
+  .warn{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;}
   .warn-row{display:flex;align-items:flex-start;gap:12px;}
   .warn-icon{width:30px;height:30px;flex:0 0 auto;border-radius:10px;display:flex;align-items:center;justify-content:center;}
   .warn-icon svg{width:17px;height:17px;}
-  .warn.severe .warn-icon{background:var(--warn-bg);color:var(--warn);}
+  .warn.severe .warn-icon{background:var(--warn-bg);color:var(--warn);animation:pulse 2.2s ease-in-out infinite;}
   .warn.clear .warn-icon{background:var(--safe-bg);color:var(--safe);}
+  @media (prefers-reduced-motion: reduce){ .warn.severe .warn-icon{animation:none;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 var(--warn-bg);} 50%{box-shadow:0 0 0 6px transparent;} }
   .warn-title{font-weight:600;font-size:14.5px;margin:0 0 2px;}
   .warn-sub{font-size:12.5px;color:var(--muted);margin:0;}
-  .warn-sub strong{color:var(--ink);font-weight:600;}
   .warn details{margin-top:8px;}
   .warn summary{
     font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.04em;
@@ -149,9 +188,24 @@
     background:var(--warn-bg);color:var(--warn);padding:2px 6px;border-radius:4px;margin-left:8px;
   }
 
-  footer{
-    margin-top:24px;text-align:center;font-size:11.5px;color:var(--muted);
-  }
+  /* Malaysia Today */
+  .today-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  @media (max-width:520px){.today-grid{grid-template-columns:1fr;}}
+  .today-card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;}
+  .today-card h3{font-size:12px;font-weight:600;color:var(--muted);margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace;}
+  .fuel-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);}
+  .fuel-row:first-of-type{border-top:none;}
+  .fuel-name{font-size:12.5px;color:var(--muted);}
+  .fuel-price{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;}
+  .fuel-delta{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-left:6px;}
+  .fuel-delta.up{color:var(--warn);}
+  .fuel-delta.down{color:var(--safe);}
+  .ride-big{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:28px;font-variant-numeric:tabular-nums;margin:0;}
+  .ride-sub{font-size:11.5px;color:var(--muted);margin:2px 0 10px;}
+  .ride-line{font-size:12px;color:var(--muted);}
+  .ride-line strong{color:var(--ink);font-weight:600;}
+
+  footer{margin-top:24px;text-align:center;font-size:11.5px;color:var(--muted);}
   footer a{color:var(--info);text-decoration:none;font-weight:600;}
   footer a:hover{text-decoration:underline;}
   footer .src{margin-top:3px;}
@@ -172,20 +226,23 @@
   <div class="pills" id="pills" role="tablist"></div>
 
   <div class="hero">
-    <div class="hero-top">
-      <div>
-        <p class="hero-date" id="heroDate">Today, Wed 9 Sep</p>
-        <p class="hero-loc" id="heroLoc">Kuala Lumpur</p>
+    <div class="hero-fx" id="heroFx"></div>
+    <div class="hero-content" id="heroContent">
+      <div class="hero-top">
+        <div>
+          <p class="hero-date" id="heroDate">Today, Wed 9 Sep</p>
+          <p class="hero-loc" id="heroLoc">Kuala Lumpur</p>
+        </div>
+        <svg class="hero-icon" id="heroIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></svg>
       </div>
-      <svg class="hero-icon" id="heroIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></svg>
-    </div>
-    <div class="hero-mid">
-      <span class="hero-temp" id="heroHi">34&deg;</span>
-      <span class="hero-temp lo" id="heroLo">24&deg;</span>
-    </div>
-    <p class="hero-cond" id="heroCond">Haze, all day</p>
+      <div class="hero-mid">
+        <span class="hero-temp" id="heroHi">34&deg;</span>
+        <span class="hero-temp lo" id="heroLo">24&deg;</span>
+      </div>
+      <p class="hero-cond" id="heroCond">Haze, all day</p>
 
-    <div class="strip" id="strip"></div>
+      <div class="strip" id="strip"></div>
+    </div>
   </div>
 
   <h2 class="section">Warnings</h2>
@@ -194,8 +251,33 @@
   <h2 class="section">Nearby tremors</h2>
   <div class="quake-list" id="quakes"></div>
 
+  <h2 class="section">Malaysia today <span class="hint">data-catalogue</span></h2>
+  <div class="today-grid">
+    <div class="today-card">
+      <h3>Fuel prices</h3>
+      <div class="fuel-row">
+        <span class="fuel-name">RON95</span>
+        <span><span class="fuel-price">RM4.02</span><span class="fuel-delta up">&#9650; 25sen/wk</span></span>
+      </div>
+      <div class="fuel-row">
+        <span class="fuel-name">RON97</span>
+        <span><span class="fuel-price">RM4.50</span><span class="fuel-delta up">&#9650; 25sen/wk</span></span>
+      </div>
+      <div class="fuel-row">
+        <span class="fuel-name">Diesel</span>
+        <span><span class="fuel-price">RM4.92</span><span class="fuel-delta up">&#9650; 25sen/wk</span></span>
+      </div>
+    </div>
+    <div class="today-card">
+      <h3>Rail &amp; bus ridership</h3>
+      <p class="ride-big">1.56M</p>
+      <p class="ride-sub">rides, latest available day (31 Jul)</p>
+      <p class="ride-line">Busiest line: <strong>MRT Kajang</strong>, 316.5k rides</p>
+    </div>
+  </div>
+
   <footer>
-    <div>MET Malaysia via <a href="https://developer.data.gov.my/realtime-api/weather">data.gov.my</a> &middot; snapshot, not live</div>
+    <div>MET Malaysia &amp; DOSM via <a href="https://developer.data.gov.my/realtime-api/weather">data.gov.my</a> &middot; snapshot, not live</div>
     <div class="src">Technical findings &rarr; <a href="https://claude.ai/code/artifact/0bebfc39-1dd8-4e92-b1a6-2cdf60e35759">MY Field Notes</a></div>
   </footer>
 
@@ -297,13 +379,19 @@
   // ---- render ----
   const pillsEl = document.getElementById('pills');
   Object.keys(LOCATIONS).forEach(key => {
+    const loc = LOCATIONS[key];
+    const c = classify(loc.week[0].s);
     const b = document.createElement('button');
-    b.className = 'pill'; b.textContent = LOCATIONS[key].name; b.dataset.key = key;
+    b.className = 'pill'; b.dataset.key = key;
+    b.innerHTML = '<svg class="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + icon(c.icon) + '</svg><span>' + loc.name + '</span>';
     b.addEventListener('click', () => selectLocation(key));
     pillsEl.appendChild(b);
   });
 
-  function selectLocation(key){
+  const heroContent = document.getElementById('heroContent');
+  const heroFx = document.getElementById('heroFx');
+
+  function renderLocation(key){
     const loc = LOCATIONS[key];
     [...pillsEl.children].forEach(p => p.classList.toggle('active', p.dataset.key === key));
 
@@ -314,6 +402,7 @@
     document.getElementById('heroLo').textContent = today.min + '°';
     document.getElementById('heroCond').textContent = cls.label + ', today';
     setIcon(document.getElementById('heroIcon'), cls.icon);
+    heroFx.className = 'hero-fx fx-' + cls.icon;
 
     const strip = document.getElementById('strip');
     strip.innerHTML = '';
@@ -328,6 +417,14 @@
         '<p class="day-lo">' + d.min + '&deg;</p>';
       strip.appendChild(cell);
     });
+  }
+
+  function selectLocation(key){
+    heroContent.classList.add('fading');
+    setTimeout(() => {
+      renderLocation(key);
+      requestAnimationFrame(() => heroContent.classList.remove('fading'));
+    }, 140);
   }
 
   const warnEl = document.getElementById('warnings');
@@ -354,7 +451,7 @@
     quakeEl.appendChild(row);
   });
 
-  selectLocation('kl');
+  renderLocation('kl');
 </script>
 </body>
 </html>
