@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hazard Watch MY</title>
-<meta name="description" content="An animated, glanceable weather-hazard app for Malaysia — condition-driven backgrounds, 7-day icons, warnings, tremors, plus a Malaysia Today strip (fuel prices, rail ridership).">
+<meta name="description" content="A single daily outlook for Malaysia — one verdict per location built from weather, warnings and seismic data, plus what it means for your commute today.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
   :root{
@@ -54,14 +54,14 @@
     margin:0; padding:18px 16px 40px;
   }
   .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
-  .wrap{max-width:640px;margin:0 auto;}
+  .wrap{max-width:600px;margin:0 auto;}
   svg{display:block;}
 
   /* Top bar */
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
   .brand{display:flex;align-items:center;gap:8px;}
-  .brand-mark{width:26px;height:26px;color:var(--accent);}
-  .brand-name{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;letter-spacing:0.01em;}
+  .brand-mark{width:24px;height:24px;color:var(--accent);}
+  .brand-name{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:0.01em;}
   .asof{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
 
   /* Location pills */
@@ -77,38 +77,28 @@
   .pill:hover{transform:translateY(-1px);}
   .pill:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
   .pill.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
-  .pill-icon{width:15px;height:15px;flex:0 0 auto;opacity:.8;}
+  .pill-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
 
-  /* Hero */
+  /* Hero / Outlook */
   .hero{
     position:relative;overflow:hidden;
     background:var(--surface);border-radius:20px;box-shadow:var(--shadow);
-    padding:22px 22px 18px;margin-bottom:14px;
+    padding:22px 22px 18px;margin-bottom:12px;
   }
-  .hero-fx{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.6;transition:opacity .4s;}
-  .hero-content{position:relative;z-index:1;}
+  .hero-fx{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.55;transition:opacity .4s;}
+  .hero-content{position:relative;z-index:1;transition:opacity .18s ease, transform .18s ease;}
   .hero-content.fading{opacity:0;transform:translateY(3px);}
-  .hero-content{transition:opacity .18s ease, transform .18s ease;}
 
-  .fx-clear{background:radial-gradient(circle at 88% 10%, var(--accent) 0%, transparent 55%);}
+  .fx-clear{background:radial-gradient(circle at 88% 8%, var(--accent) 0%, transparent 55%);}
   .fx-haze{
     background-image:
       repeating-linear-gradient(100deg, var(--muted) 0 2px, transparent 2px 46px),
       repeating-linear-gradient(100deg, var(--muted) 0 2px, transparent 2px 70px);
-    background-position:0 20%, 30px 60%;
-    opacity:.16;
+    background-position:0 20%, 30px 60%; opacity:.15;
   }
-  .fx-rain{
-    background-image:repeating-linear-gradient(112deg, transparent 0 7px, var(--info) 7px 8px, transparent 8px 26px);
-    opacity:.22;
-  }
-  .fx-storm{
-    background-image:repeating-linear-gradient(112deg, transparent 0 7px, var(--info) 7px 8px, transparent 8px 26px);
-    opacity:.26;
-  }
-  .fx-storm::after{
-    content:"";position:absolute;inset:0;background:rgba(255,255,240,0.6);opacity:0;
-  }
+  .fx-rain{background-image:repeating-linear-gradient(112deg, transparent 0 7px, var(--info) 7px 8px, transparent 8px 26px); opacity:.2;}
+  .fx-storm{background-image:repeating-linear-gradient(112deg, transparent 0 7px, var(--warn) 7px 8px, transparent 8px 26px); opacity:.22;}
+  .fx-storm::after{content:"";position:absolute;inset:0;background:rgba(255,255,240,0.6);opacity:0;}
   @media (prefers-reduced-motion: no-preference){
     .fx-clear{animation:glow 5s ease-in-out infinite alternate;}
     .fx-haze{animation:drift 22s linear infinite;}
@@ -121,91 +111,70 @@
   @keyframes rainfall{ from{background-position:0 0;} to{background-position:-14px 34px;} }
   @keyframes flash{ 0%,90%,100%{opacity:0;} 92%{opacity:.4;} 93.5%{opacity:0;} 95%{opacity:.6;} 96.5%{opacity:0;} }
 
-  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
-  .hero-date{font-size:13px;color:var(--muted);margin:0 0 2px;}
-  .hero-loc{font-size:20px;font-weight:700;margin:0;text-wrap:balance;}
-  .hero-icon{width:64px;height:64px;color:var(--accent);flex:0 0 auto;}
-  .hero-mid{display:flex;align-items:baseline;gap:10px;margin-top:10px;}
-  .hero-temp{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:38px;font-variant-numeric:tabular-nums;}
-  .hero-temp .lo{color:var(--muted);font-size:22px;}
-  .hero-cond{font-size:15px;color:var(--muted);margin-top:2px;}
+  .hero-eyebrow{font-size:12.5px;color:var(--muted);margin:0 0 10px;}
+  .verdict-row{display:flex;align-items:center;gap:12px;}
+  .verdict-icon{width:44px;height:44px;flex:0 0 auto;padding:9px;border-radius:14px;}
+  .verdict-icon svg{width:100%;height:100%;}
+  .verdict-icon.green{background:var(--safe-bg);color:var(--safe);}
+  .verdict-icon.amber{background:var(--accent-bg);color:var(--accent);}
+  .verdict-icon.red{background:var(--warn-bg);color:var(--warn);}
+  .verdict-title{font-size:22px;font-weight:700;margin:0;text-wrap:balance;line-height:1.15;}
+  .verdict-sub{font-size:14px;color:var(--muted);margin:8px 0 0;font-variant-numeric:tabular-nums;}
+
+  .why-toggle{margin-top:12px;}
+  .why-toggle summary{
+    display:inline-flex;align-items:center;gap:5px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.04em;
+    color:var(--info);cursor:pointer;list-style:none;user-select:none;
+  }
+  .why-toggle summary::-webkit-details-marker{display:none;}
+  .why-toggle summary::before{content:"why? +";}
+  .why-toggle[open] summary::before{content:"why? \2212";}
+  .why-body{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+  .why-line{display:flex;gap:10px;align-items:flex-start;padding:6px 0;}
+  .why-line svg{width:16px;height:16px;flex:0 0 auto;margin-top:2px;color:var(--muted);}
+  .why-line p{margin:0;font-size:12.5px;color:var(--muted);line-height:1.5;}
+  .why-line strong{color:var(--ink);font-weight:600;}
+  .why-more{margin-top:4px;}
+  .why-more summary{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--info);cursor:pointer;list-style:none;}
+  .why-more summary::-webkit-details-marker{display:none;}
+  .why-more summary::before{content:"details +";}
+  .why-more[open] summary::before{content:"details \2212";}
+  .why-more-body{font-size:12px;color:var(--muted);margin:6px 0 0;line-height:1.5;}
+  .quake-mini{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:3px 0;}
+  .quake-mini strong{color:var(--ink);font-variant-numeric:tabular-nums;}
 
   /* 7-day strip */
   .strip{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:16px;}
-  .day{text-align:center;padding:10px 2px 8px;border-radius:12px;cursor:default;transition:background .15s;}
-  .day.today{background:var(--accent-bg);}
+  .day{text-align:center;padding:9px 2px 7px;border-radius:12px;cursor:default;transition:background .15s;}
+  .day.today{background:var(--surface-2);}
   .day:hover{background:var(--surface-2);}
-  .day-name{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);margin:0 0 6px;}
-  .day-icon{width:22px;height:22px;margin:0 auto 6px;color:var(--ink);}
+  .day-name{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.04em;text-transform:uppercase;color:var(--muted);margin:0 0 5px;}
+  .day-dot{width:7px;height:7px;border-radius:50%;margin:0 auto 5px;}
   .day-hi{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;}
   .day-lo{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;}
 
   /* Section headers */
   h2.section{
     font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:0.1em;
-    text-transform:uppercase;color:var(--muted);margin:22px 4px 8px;
-    display:flex;align-items:center;justify-content:space-between;
+    text-transform:uppercase;color:var(--muted);margin:20px 4px 8px;
   }
-  h2.section .hint{font-size:10px;letter-spacing:0.02em;text-transform:none;color:var(--muted);opacity:.75;}
+  .section-sub{font-size:12.5px;color:var(--muted);margin:-4px 4px 10px;}
 
-  /* Warning cards */
-  .warn{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin-bottom:10px;}
-  .warn-row{display:flex;align-items:flex-start;gap:12px;}
-  .warn-icon{width:30px;height:30px;flex:0 0 auto;border-radius:10px;display:flex;align-items:center;justify-content:center;}
-  .warn-icon svg{width:17px;height:17px;}
-  .warn.severe .warn-icon{background:var(--warn-bg);color:var(--warn);animation:pulse 2.2s ease-in-out infinite;}
-  .warn.clear .warn-icon{background:var(--safe-bg);color:var(--safe);}
-  @media (prefers-reduced-motion: reduce){ .warn.severe .warn-icon{animation:none;} }
-  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 var(--warn-bg);} 50%{box-shadow:0 0 0 6px transparent;} }
-  .warn-title{font-weight:600;font-size:14.5px;margin:0 0 2px;}
-  .warn-sub{font-size:12.5px;color:var(--muted);margin:0;}
-  .warn details{margin-top:8px;}
-  .warn summary{
-    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.04em;
-    color:var(--info);cursor:pointer;list-style:none;user-select:none;
-  }
-  .warn summary::-webkit-details-marker{display:none;}
-  .warn summary::before{content:"+ ";}
-  .warn details[open] summary::before{content:"\2212 ";}
-  .warn-detail{font-size:12.5px;color:var(--muted);margin:8px 0 0;line-height:1.55;}
+  .card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;}
 
-  /* Seismic */
-  .quake-list{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;}
-  .quake{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);}
-  .quake:last-child{border-bottom:none;}
-  .quake-mag{
-    font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:13px;
-    width:38px;height:38px;border-radius:50%;flex:0 0 auto;
-    display:flex;align-items:center;justify-content:center;
-    background:var(--info-bg);color:var(--info);font-variant-numeric:tabular-nums;
-  }
-  .quake.local .quake-mag{background:var(--warn-bg);color:var(--warn);}
-  .quake-place{font-size:13.5px;font-weight:600;margin:0;}
-  .quake-meta{font-size:12px;color:var(--muted);margin:1px 0 0;}
-  .quake-when{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-left:auto;white-space:nowrap;}
-  .local-tag{
-    font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.05em;text-transform:uppercase;
-    background:var(--warn-bg);color:var(--warn);padding:2px 6px;border-radius:4px;margin-left:8px;
-  }
+  /* Getting around today */
+  .commute-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--line);}
+  .commute-row:first-of-type{border-top:none;}
+  .commute-icon{width:30px;height:30px;flex:0 0 auto;border-radius:10px;background:var(--info-bg);color:var(--info);display:flex;align-items:center;justify-content:center;}
+  .commute-icon svg{width:16px;height:16px;}
+  .commute-main{flex:1;}
+  .commute-title{font-size:13px;font-weight:600;margin:0;}
+  .commute-sub{font-size:11.5px;color:var(--muted);margin:1px 0 0;}
+  .commute-stat{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:15px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .commute-delta{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--warn);text-align:right;}
 
-  /* Malaysia Today */
-  .today-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  @media (max-width:520px){.today-grid{grid-template-columns:1fr;}}
-  .today-card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;}
-  .today-card h3{font-size:12px;font-weight:600;color:var(--muted);margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;font-family:'IBM Plex Mono',monospace;}
-  .fuel-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);}
-  .fuel-row:first-of-type{border-top:none;}
-  .fuel-name{font-size:12.5px;color:var(--muted);}
-  .fuel-price{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;font-variant-numeric:tabular-nums;}
-  .fuel-delta{font-family:'IBM Plex Mono',monospace;font-size:11px;margin-left:6px;}
-  .fuel-delta.up{color:var(--warn);}
-  .fuel-delta.down{color:var(--safe);}
-  .ride-big{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:28px;font-variant-numeric:tabular-nums;margin:0;}
-  .ride-sub{font-size:11.5px;color:var(--muted);margin:2px 0 10px;}
-  .ride-line{font-size:12px;color:var(--muted);}
-  .ride-line strong{color:var(--ink);font-weight:600;}
-
-  footer{margin-top:24px;text-align:center;font-size:11.5px;color:var(--muted);}
+  footer{margin-top:22px;text-align:center;font-size:11.5px;color:var(--muted);}
   footer a{color:var(--info);text-decoration:none;font-weight:600;}
   footer a:hover{text-decoration:underline;}
   footer .src{margin-top:3px;}
@@ -220,7 +189,7 @@
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16.5a4 4 0 0 1 .5-8 5.5 5.5 0 0 1 10.6 1.6A3.8 3.8 0 0 1 17.5 17H7Z"/><path d="M9 20l1-2M13 20l1-2M17 20l1-2"/></svg>
       <span class="brand-name">Hazard Watch MY</span>
     </div>
-    <span class="asof">as of 13:10, 9 Sep</span>
+    <span class="asof">snapshot 9 Sep, 13:10</span>
   </div>
 
   <div class="pills" id="pills" role="tablist"></div>
@@ -228,51 +197,48 @@
   <div class="hero">
     <div class="hero-fx" id="heroFx"></div>
     <div class="hero-content" id="heroContent">
-      <div class="hero-top">
+      <p class="hero-eyebrow" id="heroEyebrow">Kuala Lumpur &middot; today, Wed 9 Sep</p>
+      <div class="verdict-row">
+        <div class="verdict-icon" id="verdictIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></svg></div>
         <div>
-          <p class="hero-date" id="heroDate">Today, Wed 9 Sep</p>
-          <p class="hero-loc" id="heroLoc">Kuala Lumpur</p>
+          <h1 class="verdict-title" id="verdictTitle">Hazy conditions</h1>
+          <p class="verdict-sub" id="verdictSub">24&ndash;34&deg; &middot; haze, all day</p>
         </div>
-        <svg class="hero-icon" id="heroIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></svg>
       </div>
-      <div class="hero-mid">
-        <span class="hero-temp" id="heroHi">34&deg;</span>
-        <span class="hero-temp lo" id="heroLo">24&deg;</span>
-      </div>
-      <p class="hero-cond" id="heroCond">Haze, all day</p>
+
+      <details class="why-toggle" id="whyToggle">
+        <summary></summary>
+        <div class="why-body" id="whyBody"></div>
+      </details>
 
       <div class="strip" id="strip"></div>
     </div>
   </div>
 
-  <h2 class="section">Warnings</h2>
-  <div id="warnings"></div>
-
-  <h2 class="section">Nearby tremors</h2>
-  <div class="quake-list" id="quakes"></div>
-
-  <h2 class="section">Malaysia today <span class="hint">data-catalogue</span></h2>
-  <div class="today-grid">
-    <div class="today-card">
-      <h3>Fuel prices</h3>
-      <div class="fuel-row">
-        <span class="fuel-name">RON95</span>
-        <span><span class="fuel-price">RM4.02</span><span class="fuel-delta up">&#9650; 25sen/wk</span></span>
+  <h2 class="section">Getting around today</h2>
+  <p class="section-sub">Same weather, same choices &mdash; here's what they cost right now.</p>
+  <div class="card">
+    <div class="commute-row">
+      <div class="commute-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16h16M6 16l1.5-6h9L18 16M8 12h8"/><circle cx="8" cy="18.5" r="1.5"/><circle cx="16" cy="18.5" r="1.5"/></svg></div>
+      <div class="commute-main">
+        <p class="commute-title">Driving (RON95)</p>
+        <p class="commute-sub">RM4.50 RON97 &middot; RM4.92 diesel</p>
       </div>
-      <div class="fuel-row">
-        <span class="fuel-name">RON97</span>
-        <span><span class="fuel-price">RM4.50</span><span class="fuel-delta up">&#9650; 25sen/wk</span></span>
-      </div>
-      <div class="fuel-row">
-        <span class="fuel-name">Diesel</span>
-        <span><span class="fuel-price">RM4.92</span><span class="fuel-delta up">&#9650; 25sen/wk</span></span>
+      <div>
+        <div class="commute-stat">RM4.02/L</div>
+        <div class="commute-delta">&#9650; 25 sen this week</div>
       </div>
     </div>
-    <div class="today-card">
-      <h3>Rail &amp; bus ridership</h3>
-      <p class="ride-big">1.56M</p>
-      <p class="ride-sub">rides, latest available day (31 Jul)</p>
-      <p class="ride-line">Busiest line: <strong>MRT Kajang</strong>, 316.5k rides</p>
+    <div class="commute-row">
+      <div class="commute-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="14" rx="2"/><path d="M5 14h14M8 18l-1.5 2.5M16 18l1.5 2.5"/><circle cx="8.5" cy="9" r="1"/><circle cx="15.5" cy="9" r="1"/></svg></div>
+      <div class="commute-main">
+        <p class="commute-title">Rail &amp; bus network</p>
+        <p class="commute-sub">Busiest line: MRT Kajang, 316.5k rides</p>
+      </div>
+      <div>
+        <div class="commute-stat">1.56M</div>
+        <div class="commute-delta" style="color:var(--muted);">rides, 31 Jul</div>
+      </div>
     </div>
   </div>
 
@@ -284,19 +250,24 @@
 </div>
 
 <script>
-  // ---- icon library (monoline, currentColor) ----
+  // ---- icon library ----
   const ICONS = {
     clear: '<circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.1 5.9l-1.5 1.5M7.4 16.6l-1.5 1.5M18.1 18.1l-1.5-1.5M7.4 7.4 5.9 5.9"/>',
     haze: '<circle cx="9" cy="10" r="3.4"/><path d="M3 16h13M3 19h18M14 13.2A5.4 5.4 0 0 1 19.5 16"/>',
     rain: '<path d="M7 15.5a3.9 3.9 0 0 1 .4-7.8 5.4 5.4 0 0 1 10.4 1.6 3.7 3.7 0 0 1-.6 7.3"/><path d="M8 18.5 7 20.5M12 18.5l-1 2M16 18.5l-1 2"/>',
     storm: '<path d="M7 14.5a3.9 3.9 0 0 1 .4-7.8 5.4 5.4 0 0 1 10.4 1.6 3.7 3.7 0 0 1-.6 7.3"/><path d="M13 13l-2.6 4h2.4L11 21"/>',
     wave:  '<path d="M2 17c1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0 1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0"/><path d="M2 12c1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0 1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0"/>',
-    check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.5 2.5L16 9.3"/>'
+    quake: '<path d="M2 12h4l2-6 3 12 2-9 2 6h7"/>'
   };
   function icon(key){ return ICONS[key] || ICONS.clear; }
-  function setIcon(el, key){ el.innerHTML = icon(key); }
 
-  // ---- condition text -> {label, icon} ----
+  const TIER = {
+    clear: { t:'green', label:'Clear to go' },
+    haze:  { t:'amber', label:'Hazy conditions' },
+    rain:  { t:'amber', label:'Wet weather likely' },
+    storm: { t:'red',   label:'Storm risk today' }
+  };
+
   function classify(bm){
     if (bm.includes('Ribut petir')) {
       const where = bm.includes('pantai') ? ' (coast)' : bm.includes('pedalaman') ? ' (inland)' : '';
@@ -314,11 +285,11 @@
   const DAYS = ['Wed','Thu','Fri','Sat','Sun','Mon','Tue'];
 
   const LOCATIONS = {
-    kl: { name: 'Kuala Lumpur', week: [
+    kl: { name: 'Kuala Lumpur', namedInStorm:false, coastal:false, week: [
       {s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},
       {s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34}
     ]},
-    penang: { name: 'Penang', week: [
+    penang: { name: 'Penang', namedInStorm:false, coastal:true, week: [
       {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
@@ -326,7 +297,7 @@
       {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
       {s:'Tiada Hujan',min:25,max:33},{s:'Tiada Hujan',min:25,max:33}
     ]},
-    kedah: { name: 'Kedah', week: [
+    kedah: { name: 'Kedah', namedInStorm:true, coastal:true, week: [
       {s:'Ribut petir di beberapa tempat di kawasan pantai',min:24,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
@@ -335,7 +306,7 @@
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33}
     ]},
-    perlis: { name: 'Perlis', week: [
+    perlis: { name: 'Perlis', namedInStorm:true, coastal:true, week: [
       {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
@@ -344,7 +315,7 @@
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33}
     ]},
-    kelantan: { name: 'Kelantan', week: [
+    kelantan: { name: 'Kelantan', namedInStorm:false, coastal:true, week: [
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
@@ -353,7 +324,7 @@
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33}
     ]},
-    johor: { name: 'Johor', week: [
+    johor: { name: 'Johor', namedInStorm:true, coastal:true, week: [
       {s:'Ribut petir di beberapa tempat',min:23,max:35},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:35},
       {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:35},
@@ -362,34 +333,36 @@
     ]}
   };
 
-  const WARNINGS = [
-    { sev:'severe', icon:'storm', title:'Thunderstorms', sub:'Until 3:00pm today', detail:'Perlis, Kedah (7 districts), Johor (Tangkak, Muar, Batu Pahat), Sarawak (Bintulu, Miri, Limbang), Sabah (Interior, Sandakan, West Coast, Tawau).' },
-    { sev:'severe', icon:'wave', title:'Strong winds &amp; rough seas', sub:'10&ndash;15 Sep &middot; coastal waters', detail:'First category: gusts to 50 km/h, waves to 3.5 m nationwide. Dangerous to small craft, recreational boats and water sports.' },
-    { sev:'clear', icon:'check', title:'No cyclone advisory', sub:'All clear in the monitoring region', detail:'No Tropical Cyclone system observed under MMD monitoring (Lat 0&ndash;20&deg;N, Lon 95&ndash;130&deg;E).' }
-  ];
-
   const QUAKES = [
-    { mag:5.2, place:'Flores Region, Indonesia', meta:'1,399 km S of Sabah', when:'08 Sep', local:false },
-    { mag:6.3, place:'Fox Islands, Aleutians',   meta:'8,247 km NE of Sabah', when:'03 Sep', local:false },
-    { mag:3.4, place:'Keningau, Sabah',          meta:'10 km W of Keningau',  when:'03 Sep', local:true  },
-    { mag:5.3, place:'West Papua, Indonesia',    meta:'2,502 km E of Sabah',  when:'02 Sep', local:false },
-    { mag:5.7, place:'Mindanao, Philippines',    meta:'825 km E of Sabah',    when:'01 Sep', local:false }
+    { mag:5.2, place:'Flores Region, Indonesia', when:'08 Sep', local:false },
+    { mag:6.3, place:'Fox Islands, Aleutians',   when:'03 Sep', local:false },
+    { mag:3.4, place:'Keningau, Sabah',          when:'03 Sep', local:true  },
+    { mag:5.3, place:'West Papua, Indonesia',    when:'02 Sep', local:false },
+    { mag:5.7, place:'Mindanao, Philippines',    when:'01 Sep', local:false }
   ];
+  const NEAREST_QUAKE = QUAKES.find(q => q.local) || QUAKES[0];
+
+  const THUNDERSTORM_DETAIL = 'Perlis, Kedah (7 districts), Johor (Tangkak, Muar, Batu Pahat), Sarawak (Bintulu, Miri, Limbang), Sabah (Interior, Sandakan, West Coast, Tawau) &mdash; until 3:00pm today.';
+  const WIND_DETAIL = 'First category: gusts to 50 km/h, waves to 3.5 m over coastal waters nationwide, 10&ndash;15 Sep. Dangerous to small craft and water sports.';
 
   // ---- render ----
   const pillsEl = document.getElementById('pills');
   Object.keys(LOCATIONS).forEach(key => {
     const loc = LOCATIONS[key];
     const c = classify(loc.week[0].s);
+    const tier = TIER[c.icon].t;
     const b = document.createElement('button');
     b.className = 'pill'; b.dataset.key = key;
-    b.innerHTML = '<svg class="pill-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + icon(c.icon) + '</svg><span>' + loc.name + '</span>';
+    b.innerHTML = '<span class="pill-dot" style="background:var(--' + (tier==='green'?'safe':tier==='amber'?'accent':'warn') + ')"></span><span>' + loc.name + '</span>';
     b.addEventListener('click', () => selectLocation(key));
     pillsEl.appendChild(b);
   });
 
   const heroContent = document.getElementById('heroContent');
   const heroFx = document.getElementById('heroFx');
+  const verdictIcon = document.getElementById('verdictIcon');
+
+  function tierColorVar(t){ return t==='green' ? '--safe' : t==='amber' ? '--accent' : '--warn'; }
 
   function renderLocation(key){
     const loc = LOCATIONS[key];
@@ -397,22 +370,46 @@
 
     const today = loc.week[0];
     const cls = classify(today.s);
-    document.getElementById('heroLoc').textContent = loc.name;
-    document.getElementById('heroHi').textContent = today.max + '°';
-    document.getElementById('heroLo').textContent = today.min + '°';
-    document.getElementById('heroCond').textContent = cls.label + ', today';
-    setIcon(document.getElementById('heroIcon'), cls.icon);
+    const tier = TIER[cls.icon];
+
+    document.getElementById('heroEyebrow').textContent = loc.name + ' · today, Wed 9 Sep';
+    document.getElementById('verdictTitle').textContent = tier.label;
+    document.getElementById('verdictSub').textContent = today.min + '–' + today.max + '° · ' + cls.label.toLowerCase() + ', today';
+    verdictIcon.className = 'verdict-icon ' + tier.t;
+    verdictIcon.querySelector('svg').innerHTML = icon(cls.icon);
     heroFx.className = 'hero-fx fx-' + cls.icon;
+
+    // why panel
+    document.getElementById('whyToggle').open = false;
+    const warnLine = loc.namedInStorm
+      ? '<strong>Named</strong> in today’s active thunderstorm warning.'
+      : loc.coastal
+        ? 'Not named in the thunderstorm warning, but its coast is under a strong wind &amp; rough seas advisory.'
+        : 'No active warning currently names this location.';
+    const warnDetail = loc.namedInStorm ? THUNDERSTORM_DETAIL : (loc.coastal ? WIND_DETAIL : '');
+    document.getElementById('whyBody').innerHTML =
+      '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon(cls.icon) + '</svg>' +
+        '<p><strong>Weather:</strong> ' + cls.label + ', ' + today.min + '–' + today.max + '°.</p></div>' +
+      '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon('storm') + '</svg>' +
+        '<div><p><strong>Warnings:</strong> ' + warnLine + '</p>' +
+        (warnDetail ? '<details class="why-more"><summary></summary><p class="why-more-body">' + warnDetail + '</p></details>' : '') +
+        '</div></div>' +
+      '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon('quake') + '</svg>' +
+        '<div><p><strong>Seismic:</strong> nearest event M' + NEAREST_QUAKE.mag.toFixed(1) + ', ' + NEAREST_QUAKE.place + ' (' + NEAREST_QUAKE.when + ') &mdash; no impact expected here.</p>' +
+        '<details class="why-more"><summary></summary><div class="why-more-body">' +
+          QUAKES.map(q => '<div class="quake-mini"><span>' + q.place + (q.local?' (local)':'') + '</span><strong>M' + q.mag.toFixed(1) + '</strong></div>').join('') +
+        '</div></details></div></div>';
 
     const strip = document.getElementById('strip');
     strip.innerHTML = '';
     loc.week.forEach((d, i) => {
       const c = classify(d.s);
+      const t = TIER[c.icon].t;
       const cell = document.createElement('div');
       cell.className = 'day' + (i === 0 ? ' today' : '');
       cell.innerHTML =
         '<p class="day-name">' + DAYS[i] + '</p>' +
-        '<svg class="day-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' + icon(c.icon) + '</svg>' +
+        '<span class="day-dot" style="background:var(' + tierColorVar(t) + ')"></span>' +
         '<p class="day-hi">' + d.max + '&deg;</p>' +
         '<p class="day-lo">' + d.min + '&deg;</p>';
       strip.appendChild(cell);
@@ -426,30 +423,6 @@
       requestAnimationFrame(() => heroContent.classList.remove('fading'));
     }, 140);
   }
-
-  const warnEl = document.getElementById('warnings');
-  WARNINGS.forEach(w => {
-    const card = document.createElement('div');
-    card.className = 'warn ' + w.sev;
-    card.innerHTML =
-      '<div class="warn-row">' +
-        '<div class="warn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon(w.icon) + '</svg></div>' +
-        '<div><p class="warn-title">' + w.title + '</p><p class="warn-sub">' + w.sub + '</p></div>' +
-      '</div>' +
-      '<details><summary>Details</summary><p class="warn-detail">' + w.detail + '</p></details>';
-    warnEl.appendChild(card);
-  });
-
-  const quakeEl = document.getElementById('quakes');
-  QUAKES.forEach(q => {
-    const row = document.createElement('div');
-    row.className = 'quake' + (q.local ? ' local' : '');
-    row.innerHTML =
-      '<span class="quake-mag">' + q.mag.toFixed(1) + '</span>' +
-      '<div><p class="quake-place">' + q.place + (q.local ? '<span class="local-tag">Local</span>' : '') + '</p><p class="quake-meta">' + q.meta + '</p></div>' +
-      '<span class="quake-when">' + q.when + '</span>';
-    quakeEl.appendChild(row);
-  });
 
   renderLocation('kl');
 </script>
