@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jom MY</title>
-<meta name="description" content="A quick daily check before you head out in Malaysia — weather, warnings and tremors distilled into one verdict per city, with animated icons that match what's actually happening that day.">
+<meta name="description" content="A quick daily check before you head out in Malaysia — weather, warnings and tremors distilled into one verdict per city, live from data.gov.my.">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <style>
   :root{
@@ -58,11 +58,13 @@
   svg{display:block;}
 
   /* Top bar */
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;}
   .brand{display:flex;align-items:center;gap:8px;}
-  .brand-mark{width:24px;height:24px;color:var(--accent);}
+  .brand-mark{width:24px;height:24px;color:var(--accent);flex:0 0 auto;}
   .brand-name{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:14px;letter-spacing:0.01em;}
-  .asof{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);}
+  .asof{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);text-align:right;white-space:nowrap;}
+  .asof .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:var(--safe);}
+  .asof.stale .dot{background:var(--accent);}
 
   /* Location pills */
   .pills{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;margin-bottom:14px;scrollbar-width:none;}
@@ -199,7 +201,7 @@
       <svg class="brand-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.1"/><path d="M4 18.5h16M9 18.5l3-5.2 3 5.2"/></svg>
       <span class="brand-name">Jom MY</span>
     </div>
-    <span class="asof">snapshot 9 Sep, 13:10</span>
+    <span class="asof" id="asof"><span class="dot"></span>loading&hellip;</span>
   </div>
 
   <div class="pills" id="pills" role="tablist"></div>
@@ -207,12 +209,12 @@
   <div class="hero">
     <div class="hero-fx" id="heroFx"></div>
     <div class="hero-content" id="heroContent">
-      <p class="hero-eyebrow" id="heroEyebrow">Kuala Lumpur &middot; today, Wed 9 Sep</p>
+      <p class="hero-eyebrow" id="heroEyebrow">Loading today&rsquo;s outlook&hellip;</p>
       <div class="verdict-row">
         <div class="verdict-icon" id="verdictIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></svg></div>
         <div>
-          <h1 class="verdict-title" id="verdictTitle">Hazy conditions</h1>
-          <p class="verdict-sub" id="verdictSub">24&ndash;34&deg; &middot; haze, all day</p>
+          <h1 class="verdict-title" id="verdictTitle">&nbsp;</h1>
+          <p class="verdict-sub" id="verdictSub">&nbsp;</p>
         </div>
       </div>
 
@@ -232,40 +234,39 @@
       <div class="commute-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16h16M6 16l1.5-6h9L18 16M8 12h8"/><circle cx="8" cy="18.5" r="1.5"/><circle cx="16" cy="18.5" r="1.5"/></svg></div>
       <div class="commute-main">
         <p class="commute-title">Driving (RON95)</p>
-        <p class="commute-sub">RM4.50 RON97 &middot; RM4.92 diesel</p>
+        <p class="commute-sub" id="fuelSub">&nbsp;</p>
       </div>
       <div>
-        <div class="commute-stat">RM4.02/L</div>
-        <div class="commute-delta">&#9650; 25 sen this week</div>
+        <div class="commute-stat" id="fuelStat">&nbsp;</div>
+        <div class="commute-delta" id="fuelDelta">&nbsp;</div>
       </div>
     </div>
     <div class="commute-row">
       <div class="commute-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="14" rx="2"/><path d="M5 14h14M8 18l-1.5 2.5M16 18l1.5 2.5"/><circle cx="8.5" cy="9" r="1"/><circle cx="15.5" cy="9" r="1"/></svg></div>
       <div class="commute-main">
-        <p class="commute-title">Busiest rail line</p>
-        <p class="commute-sub">MRT Kajang Line, last published day</p>
+        <p class="commute-title" id="railTitle">Busiest rail line</p>
+        <p class="commute-sub">last published day</p>
       </div>
       <div>
-        <div class="commute-stat">316.5k</div>
-        <div class="commute-delta" style="color:var(--muted);">riders, 31 Jul</div>
+        <div class="commute-stat" id="railStat">&nbsp;</div>
+        <div class="commute-delta" id="railDelta" style="color:var(--muted);">&nbsp;</div>
       </div>
     </div>
   </div>
 
   <footer>
-    <div>MET Malaysia &amp; DOSM via <a href="https://developer.data.gov.my/realtime-api/weather">data.gov.my</a> &middot; snapshot, not live</div>
+    <div id="footerLine">MET Malaysia &amp; DOSM via <a href="https://developer.data.gov.my/realtime-api/weather">data.gov.my</a></div>
   </footer>
 
 </div>
 
 <script>
-  // ---- icon library ----
+  // ================= icon library + classification (unchanged) =================
   const ICONS = {
     clear: '<circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M21 12h-2.2M5.2 12H3M18.1 5.9l-1.5 1.5M7.4 16.6l-1.5 1.5M18.1 18.1l-1.5-1.5M7.4 7.4 5.9 5.9"/>',
     haze: '<circle cx="9" cy="10" r="3.4"/><path d="M3 16h13M3 19h18M14 13.2A5.4 5.4 0 0 1 19.5 16"/>',
     rain: '<path d="M7 15.5a3.9 3.9 0 0 1 .4-7.8 5.4 5.4 0 0 1 10.4 1.6 3.7 3.7 0 0 1-.6 7.3"/><path d="M8 18.5 7 20.5M12 18.5l-1 2M16 18.5l-1 2"/>',
     storm: '<path d="M7 14.5a3.9 3.9 0 0 1 .4-7.8 5.4 5.4 0 0 1 10.4 1.6 3.7 3.7 0 0 1-.6 7.3"/><path d="M13 13l-2.6 4h2.4L11 21"/>',
-    wave:  '<path d="M2 17c1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0 1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0"/><path d="M2 12c1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0 1.6 1.4 3.2 1.4 4.8 0 1.6-1.4 3.2-1.4 4.8 0"/>',
     quake: '<path d="M2 12h4l2-6 3 12 2-9 2 6h7"/>'
   };
   function icon(key){ return ICONS[key] || ICONS.clear; }
@@ -278,6 +279,7 @@
   };
 
   function classify(bm){
+    bm = bm || '';
     if (bm.includes('Ribut petir')) {
       const where = bm.includes('pantai') ? ' (coast)' : bm.includes('pedalaman') ? ' (inland)' : '';
       return { label: 'Thunderstorms' + where, icon: 'storm' };
@@ -290,134 +292,294 @@
     return { label: 'No rain', icon: 'clear' };
   }
 
-  // ---- real snapshot data, api.data.gov.my/weather/forecast, fetched 9 Sep 2026 ----
-  const DAYS = ['Wed','Thu','Fri','Sat','Sun','Mon','Tue'];
+  // ================= location config =================
+  // location_id prefix "St" = State forecast rows. Names as returned by the API.
+  const STATE_NAME_TO_KEY = {
+    'WP Kuala Lumpur': 'kl', 'Pulau Pinang': 'penang', 'Kedah': 'kedah',
+    'Perlis': 'perlis', 'Kelantan': 'kelantan', 'Johor': 'johor'
+  };
+  const DISPLAY_NAME = { kl:'Kuala Lumpur', penang:'Penang', kedah:'Kedah', perlis:'Perlis', kelantan:'Kelantan', johor:'Johor' };
+  const MATCH_NAME   = { kl:'kuala lumpur', penang:'penang', kedah:'kedah', perlis:'perlis', kelantan:'kelantan', johor:'johor' };
+  const COASTAL      = { kl:false, penang:true, kedah:true, perlis:true, kelantan:true, johor:true };
+  const LOCATION_ORDER = ['kl','penang','kedah','perlis','kelantan','johor'];
 
-  const LOCATIONS = {
-    kl: { name: 'Kuala Lumpur', namedInStorm:false, coastal:false, week: [
-      {s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},
-      {s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34},{s:'Jerebu',min:24,max:34}
-    ]},
-    penang: { name: 'Penang', namedInStorm:false, coastal:true, week: [
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
-      {s:'Tiada Hujan',min:25,max:33},{s:'Tiada Hujan',min:25,max:33}
-    ]},
-    kedah: { name: 'Kedah', namedInStorm:true, coastal:true, week: [
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:24,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
-      {s:'Ribut petir di beberapa tempat',min:24,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:24,max:33}
-    ]},
-    perlis: { name: 'Perlis', namedInStorm:true, coastal:true, week: [
-      {s:'Ribut petir di beberapa tempat di kawasan pantai',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:25,max:33}
-    ]},
-    kelantan: { name: 'Kelantan', namedInStorm:false, coastal:true, week: [
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:33}
-    ]},
-    johor: { name: 'Johor', namedInStorm:true, coastal:true, week: [
-      {s:'Ribut petir di beberapa tempat',min:23,max:35},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:35},
-      {s:'Ribut petir di beberapa tempat di kawasan pedalaman',min:23,max:35},
-      {s:'Jerebu',min:23,max:35},{s:'Tiada Hujan',min:23,max:35},
-      {s:'Jerebu',min:23,max:35},{s:'Jerebu',min:23,max:35}
-    ]}
+  const RIDERSHIP_LABELS = {
+    rail_mrt_kajang:'MRT Kajang Line', rail_lrt_kj:'LRT Kelana Jaya Line', rail_lrt_ampang:'LRT Ampang Line',
+    rail_mrt_pjy:'MRT Putrajaya Line', rail_monorail:'KL Monorail', rail_komuter:'KTM Komuter',
+    rail_komuter_utara:'KTM Komuter Utara', rail_lrt_shah_alam:'LRT Shah Alam Line', rail_ets:'ETS Intercity',
+    rail_tebrau:'KTM Tebrau Shuttle', rail_intercity:'KTM Intercity', bus_rkl:'Rapid Bus KL',
+    bus_rpn:'Rapid Bus Penang', bus_rkn:'Rapid Bus Kuantan'
   };
 
-  const QUAKES = [
-    { mag:5.2, place:'Flores Region, Indonesia', when:'08 Sep', local:false },
-    { mag:6.3, place:'Fox Islands, Aleutians',   when:'03 Sep', local:false },
-    { mag:3.4, place:'Keningau, Sabah',          when:'03 Sep', local:true  },
-    { mag:5.3, place:'West Papua, Indonesia',    when:'02 Sep', local:false },
-    { mag:5.7, place:'Mindanao, Philippines',    when:'01 Sep', local:false }
-  ];
-  const NEAREST_QUAKE = QUAKES.find(q => q.local) || QUAKES[0];
+  // ================= normalize raw API response into render-ready state =================
+  function buildState(raw) {
+    const byKey = {};
+    (raw.forecast || []).forEach(row => {
+      const key = STATE_NAME_TO_KEY[row.location && row.location.location_name];
+      if (!key) return;
+      (byKey[key] = byKey[key] || []).push(row);
+    });
 
-  const THUNDERSTORM_DETAIL = 'Perlis, Kedah (7 districts), Johor (Tangkak, Muar, Batu Pahat), Sarawak (Bintulu, Miri, Limbang), Sabah (Interior, Sandakan, West Coast, Tawau) &mdash; until 3:00pm today.';
-  const WIND_DETAIL = 'First category: gusts to 50 km/h, waves to 3.5 m over coastal waters nationwide, 10&ndash;15 Sep. Dangerous to small craft and water sports.';
+    const locations = {};
+    LOCATION_ORDER.forEach(key => {
+      const rows = (byKey[key] || []).slice().sort((a, b) => a.date.localeCompare(b.date)).slice(0, 7);
+      if (!rows.length) return;
+      locations[key] = {
+        name: DISPLAY_NAME[key],
+        coastal: COASTAL[key],
+        week: rows.map(r => ({ date: r.date, s: r.summary_forecast, min: r.min_temp, max: r.max_temp }))
+      };
+    });
 
-  // ---- render ----
+    const now = Date.now();
+    const active = (raw.warning || []).filter(w => {
+      if (!w.heading_en || /no advisory/i.test(w.heading_en)) return false;
+      const validTo = w.valid_to ? Date.parse(w.valid_to) : null;
+      return !validTo || validTo >= now;
+    });
+    const stormWarning = active.find(w => /THUNDERSTORM/i.test(w.heading_en || ''));
+    const windWarning = active.find(w => /STRONG WIND|ROUGH SEA/i.test(w.heading_en || ''));
+
+    Object.keys(locations).forEach(key => {
+      const name = MATCH_NAME[key];
+      locations[key].namedInStorm = !!(stormWarning && (stormWarning.text_en || '').toLowerCase().includes(name));
+    });
+
+    const quakes = (raw.earthquake || [])
+      .slice()
+      .sort((a, b) => new Date(b.utcdatetime) - new Date(a.utcdatetime))
+      .slice(0, 5)
+      .map(q => ({
+        mag: q.magdefault,
+        place: q.location_original,
+        when: new Date(q.utcdatetime).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }),
+        local: /sabah|sarawak|malaysia/i.test(q.location_original || '')
+      }));
+
+    const fuelLevel = (raw.fuel || []).find(f => f.series_type === 'level');
+    const fuelChange = (raw.fuel || []).find(f => f.series_type === 'change_weekly');
+    const fuel = fuelLevel ? {
+      ron95: fuelLevel.ron95, ron97: fuelLevel.ron97, diesel: fuelLevel.diesel,
+      changeSen: fuelChange ? Math.round(fuelChange.ron95 * 100) : null,
+      date: fuelLevel.date
+    } : null;
+
+    let ridership = null;
+    const rrow = (raw.ridership || []).slice().sort((a, b) => b.date.localeCompare(a.date))[0];
+    if (rrow) {
+      let bestKey = null, bestVal = -1;
+      Object.keys(RIDERSHIP_LABELS).forEach(k => {
+        if (typeof rrow[k] === 'number' && rrow[k] > bestVal) { bestVal = rrow[k]; bestKey = k; }
+      });
+      if (bestKey) ridership = { label: RIDERSHIP_LABELS[bestKey], value: bestVal, date: rrow.date };
+    }
+
+    return {
+      fetchedAt: raw.fetchedAt || null,
+      locations,
+      quakes,
+      thunderstormDetail: stormWarning ? stormWarning.text_en : '',
+      windDetail: windWarning ? windWarning.text_en : '',
+      fuel, ridership
+    };
+  }
+
+  // ================= fallback: last-known-good snapshot, same raw shape =================
+  // Used only if /api/data isn't reachable (e.g. this file served from a plain
+  // static host with no serverless function, or a transient upstream error).
+  function fallbackWeek(entries) {
+    const start = new Date('2026-09-09T00:00:00Z');
+    return entries.map((e, i) => {
+      const d = new Date(start); d.setUTCDate(d.getUTCDate() + i);
+      return { s: e.s, min: e.min, max: e.max, date: d.toISOString().slice(0, 10) };
+    });
+  }
+  const FALLBACK_RAW = {
+    fetchedAt: '2026-09-09T13:10:00+08:00',
+    forecast: (() => {
+      const rows = [];
+      const weeks = {
+        'WP Kuala Lumpur': Array(7).fill({ s: 'Jerebu', min: 24, max: 34 }),
+        'Pulau Pinang': [
+          { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 25, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 25, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 25, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 25, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 25, max: 33 },
+          { s: 'Tiada Hujan', min: 25, max: 33 }, { s: 'Tiada Hujan', min: 25, max: 33 }
+        ],
+        'Kedah': [
+          { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 24, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 24, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 24, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 24, max: 33 },
+          { s: 'Ribut petir di beberapa tempat', min: 24, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 24, max: 33 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 24, max: 33 }
+        ],
+        'Perlis': Array(7).fill(0).map((_, i) => i === 0
+          ? { s: 'Ribut petir di beberapa tempat di kawasan pantai', min: 25, max: 33 }
+          : { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 25, max: 33 }),
+        'Kelantan': Array(7).fill({ s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 23, max: 33 }),
+        'Johor': [
+          { s: 'Ribut petir di beberapa tempat', min: 23, max: 35 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 23, max: 35 },
+          { s: 'Ribut petir di beberapa tempat di kawasan pedalaman', min: 23, max: 35 },
+          { s: 'Jerebu', min: 23, max: 35 }, { s: 'Tiada Hujan', min: 23, max: 35 },
+          { s: 'Jerebu', min: 23, max: 35 }, { s: 'Jerebu', min: 23, max: 35 }
+        ]
+      };
+      Object.keys(weeks).forEach(name => {
+        fallbackWeek(weeks[name]).forEach(d => rows.push({
+          location: { location_name: name }, date: d.date,
+          summary_forecast: d.s, min_temp: d.min, max_temp: d.max
+        }));
+      });
+      return rows;
+    })(),
+    warning: [
+      {
+        heading_en: 'THUNDERSTORMS WARNING',
+        valid_to: '2099-01-01T00:00:00',
+        text_en: 'Thunderstorms, heavy rain and strong winds are expected over Perlis, Kedah (7 districts), Johor (Tangkak, Muar, Batu Pahat), Sarawak (Bintulu, Miri, Limbang), Sabah (Interior, Sandakan, West Coast, Tawau) until 3:00pm today.'
+      },
+      {
+        heading_en: 'FIRST CATEGORY WARNING ON STRONG WINDS AND ROUGH SEAS',
+        valid_to: '2099-01-01T00:00:00',
+        text_en: 'First category: gusts to 50 km/h, waves to 3.5 m over coastal waters nationwide, 10-15 Sep. Dangerous to small craft and water sports.'
+      }
+    ],
+    earthquake: [
+      { utcdatetime: '2026-09-08T00:00:00', magdefault: 5.2, location_original: 'Flores Region, Indonesia' },
+      { utcdatetime: '2026-09-03T12:00:00', magdefault: 6.3, location_original: 'Fox Islands, Aleutians' },
+      { utcdatetime: '2026-09-03T00:00:00', magdefault: 3.4, location_original: 'Keningau, Sabah, Malaysia' },
+      { utcdatetime: '2026-09-02T00:00:00', magdefault: 5.3, location_original: 'West Papua, Indonesia' },
+      { utcdatetime: '2026-09-01T00:00:00', magdefault: 5.7, location_original: 'Mindanao, Philippines' }
+    ],
+    fuel: [
+      { series_type: 'level', ron95: 4.02, ron97: 4.50, diesel: 4.92, date: '2026-09-09' },
+      { series_type: 'change_weekly', ron95: 0.25, date: '2026-09-09' }
+    ],
+    ridership: [
+      { date: '2026-07-31', bus_rkl: 247625, bus_rkn: 0, bus_rpn: 53121, rail_ets: 22012, rail_lrt_kj: 302283,
+        rail_tebrau: 9750, rail_komuter: 25518, rail_mrt_pjy: 191033, rail_monorail: 65335, rail_intercity: 4923,
+        rail_lrt_ampang: 233242, rail_mrt_kajang: 316544, rail_komuter_utara: 22838, rail_lrt_shah_alam: 67915 }
+    ]
+  };
+
+  // ================= data load =================
+  let STATE = null;
+
+  async function loadData() {
+    try {
+      const res = await fetch('/api/data', { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const raw = await res.json();
+      if (raw.error) throw new Error(raw.error);
+      STATE = buildState(raw);
+      STATE.live = true;
+    } catch (e) {
+      STATE = buildState(FALLBACK_RAW);
+      STATE.live = false;
+    }
+    boot();
+  }
+
+  // ================= render =================
   const pillsEl = document.getElementById('pills');
-  Object.keys(LOCATIONS).forEach(key => {
-    const loc = LOCATIONS[key];
-    const c = classify(loc.week[0].s);
-    const tier = TIER[c.icon].t;
-    const b = document.createElement('button');
-    b.className = 'pill'; b.dataset.key = key;
-    b.innerHTML = '<span class="pill-dot" style="background:var(--' + (tier==='green'?'safe':tier==='amber'?'accent':'warn') + ')"></span><span>' + loc.name + '</span>';
-    b.addEventListener('click', () => selectLocation(key));
-    pillsEl.appendChild(b);
-  });
-
   const heroContent = document.getElementById('heroContent');
   const heroFx = document.getElementById('heroFx');
   const verdictIcon = document.getElementById('verdictIcon');
 
   function tierColorVar(t){ return t==='green' ? '--safe' : t==='amber' ? '--accent' : '--warn'; }
 
+  function renderTopMeta() {
+    const asof = document.getElementById('asof');
+    const footerLine = document.getElementById('footerLine');
+    if (STATE.live) {
+      const t = STATE.fetchedAt ? new Date(STATE.fetchedAt).toLocaleTimeString('en-MY', { hour: '2-digit', minute: '2-digit' }) : '';
+      asof.className = 'asof';
+      asof.innerHTML = '<span class="dot"></span>live &middot; fetched ' + t;
+      footerLine.innerHTML = 'MET Malaysia &amp; DOSM via <a href="https://developer.data.gov.my/realtime-api/weather">data.gov.my</a> &middot; refreshed live';
+    } else {
+      asof.className = 'asof stale';
+      asof.innerHTML = '<span class="dot"></span>showing last saved snapshot';
+      footerLine.innerHTML = 'MET Malaysia &amp; DOSM via <a href="https://developer.data.gov.my/realtime-api/weather">data.gov.my</a> &middot; live fetch unavailable right now';
+    }
+  }
+
+  function renderCommute() {
+    const f = STATE.fuel, r = STATE.ridership;
+    if (f) {
+      document.getElementById('fuelSub').textContent = 'RM' + f.ron97.toFixed(2) + ' RON97 · RM' + f.diesel.toFixed(2) + ' diesel';
+      document.getElementById('fuelStat').textContent = 'RM' + f.ron95.toFixed(2) + '/L';
+      const delta = document.getElementById('fuelDelta');
+      if (f.changeSen === null || f.changeSen === 0) { delta.textContent = 'no change this week'; delta.style.color = 'var(--muted)'; }
+      else if (f.changeSen > 0) { delta.innerHTML = '&#9650; ' + f.changeSen + ' sen this week'; delta.style.color = 'var(--warn)'; }
+      else { delta.innerHTML = '&#9660; ' + Math.abs(f.changeSen) + ' sen this week'; delta.style.color = 'var(--safe)'; }
+    }
+    if (r) {
+      document.getElementById('railStat').textContent = (r.value / 1000).toFixed(1) + 'k';
+      const d = new Date(r.date + 'T00:00:00');
+      document.getElementById('railDelta').textContent = 'riders, ' + d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+      document.getElementById('railTitle').parentElement.querySelector('.commute-sub').textContent = r.label + ', last published day';
+    }
+  }
+
   function renderLocation(key){
-    const loc = LOCATIONS[key];
+    const loc = STATE.locations[key];
+    if (!loc) return;
     [...pillsEl.children].forEach(p => p.classList.toggle('active', p.dataset.key === key));
 
     const today = loc.week[0];
     const cls = classify(today.s);
     const tier = TIER[cls.icon];
+    const dayLabel = new Date(today.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
 
-    document.getElementById('heroEyebrow').textContent = loc.name + ' · today, Wed 9 Sep';
+    document.getElementById('heroEyebrow').textContent = loc.name + ' · today, ' + dayLabel;
     document.getElementById('verdictTitle').textContent = tier.label;
     document.getElementById('verdictSub').textContent = today.min + '–' + today.max + '° · ' + cls.label.toLowerCase() + ', today';
     verdictIcon.className = 'verdict-icon ' + tier.t;
     verdictIcon.querySelector('svg').innerHTML = icon(cls.icon);
     heroFx.className = 'hero-fx fx-' + cls.icon;
 
-    // why panel
     document.getElementById('whyToggle').open = false;
     const warnLine = loc.namedInStorm
       ? '<strong>Named</strong> in today’s active thunderstorm warning.'
       : loc.coastal
         ? 'Not named in the thunderstorm warning, but its coast is under a strong wind &amp; rough seas advisory.'
         : 'No active warning currently names this location.';
-    const warnDetail = loc.namedInStorm ? THUNDERSTORM_DETAIL : (loc.coastal ? WIND_DETAIL : '');
-    document.getElementById('whyBody').innerHTML =
+    const warnDetail = loc.namedInStorm ? STATE.thunderstormDetail : (loc.coastal ? STATE.windDetail : '');
+    const quakes = STATE.quakes || [];
+    const nearestQuake = quakes.find(q => q.local) || quakes[0];
+
+    let whyHtml =
       '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon(cls.icon) + '</svg>' +
         '<p><strong>Weather:</strong> ' + cls.label + ', ' + today.min + '–' + today.max + '°.</p></div>' +
       '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon('storm') + '</svg>' +
         '<div><p><strong>Warnings:</strong> ' + warnLine + '</p>' +
         (warnDetail ? '<details class="why-more"><summary></summary><p class="why-more-body">' + warnDetail + '</p></details>' : '') +
-        '</div></div>' +
-      '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon('quake') + '</svg>' +
-        '<div><p><strong>Seismic:</strong> nearest event M' + NEAREST_QUAKE.mag.toFixed(1) + ', ' + NEAREST_QUAKE.place + ' (' + NEAREST_QUAKE.when + ') &mdash; no impact expected here.</p>' +
-        '<details class="why-more"><summary></summary><div class="why-more-body">' +
-          QUAKES.map(q => '<div class="quake-mini"><span>' + q.place + (q.local?' (local)':'') + '</span><strong>M' + q.mag.toFixed(1) + '</strong></div>').join('') +
-        '</div></details></div></div>';
+        '</div></div>';
+    if (nearestQuake) {
+      whyHtml +=
+        '<div class="why-line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon('quake') + '</svg>' +
+          '<div><p><strong>Seismic:</strong> nearest event M' + nearestQuake.mag.toFixed(1) + ', ' + nearestQuake.place + ' (' + nearestQuake.when + ') &mdash; no impact expected here.</p>' +
+          '<details class="why-more"><summary></summary><div class="why-more-body">' +
+            quakes.map(q => '<div class="quake-mini"><span>' + q.place + (q.local?' (local)':'') + '</span><strong>M' + q.mag.toFixed(1) + '</strong></div>').join('') +
+          '</div></details></div></div>';
+    }
+    document.getElementById('whyBody').innerHTML = whyHtml;
 
     const strip = document.getElementById('strip');
     strip.innerHTML = '';
     loc.week.forEach((d, i) => {
       const c = classify(d.s);
       const t = TIER[c.icon].t;
+      const dayName = new Date(d.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
       const cell = document.createElement('div');
       cell.className = 'day' + (i === 0 ? ' today' : '');
       cell.innerHTML =
-        '<p class="day-name">' + DAYS[i] + '</p>' +
+        '<p class="day-name">' + dayName + '</p>' +
         '<svg class="day-icon icon-' + c.icon + '" style="color:var(' + tierColorVar(t) + ');animation-delay:' + (i * 160) + 'ms" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + icon(c.icon) + '</svg>' +
         '<p class="day-hi">' + d.max + '&deg;</p>' +
         '<p class="day-lo">' + d.min + '&deg;</p>';
@@ -433,7 +595,25 @@
     }, 140);
   }
 
-  renderLocation('kl');
+  function boot() {
+    renderTopMeta();
+    renderCommute();
+    pillsEl.innerHTML = '';
+    LOCATION_ORDER.forEach(key => {
+      const loc = STATE.locations[key];
+      if (!loc) return;
+      const c = classify(loc.week[0].s);
+      const tier = TIER[c.icon].t;
+      const b = document.createElement('button');
+      b.className = 'pill'; b.dataset.key = key;
+      b.innerHTML = '<span class="pill-dot" style="background:var(--' + (tier==='green'?'safe':tier==='amber'?'accent':'warn') + ')"></span><span>' + loc.name + '</span>';
+      b.addEventListener('click', () => selectLocation(key));
+      pillsEl.appendChild(b);
+    });
+    renderLocation('kl');
+  }
+
+  loadData();
 </script>
 </body>
 </html>
