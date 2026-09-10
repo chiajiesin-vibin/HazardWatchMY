@@ -6,7 +6,7 @@ Built as part of an exercise comparing [data.gov.my](https://data.gov.my) agains
 
 ## Data source
 
-All content is a snapshot from `api.data.gov.my`:
+All content is a snapshot from `api.data.gov.my`, documented at the [Weather API reference](https://developer.data.gov.my/realtime-api/weather):
 
 - `GET /weather/forecast` — 7-day forecast
 - `GET /weather/warning` — active weather warnings
