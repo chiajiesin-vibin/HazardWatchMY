@@ -1,8 +1,8 @@
-# Outlook MY
+# Jom MY
 
-A single daily outlook for Malaysia. Pick a location and it gives you one verdict — Clear to go, Hazy conditions, Wet weather likely, or Storm risk today — built from that location's forecast, active MET Malaysia warnings, and recent seismic activity, with a "why?" panel to see the reasoning behind it. A "Getting around today" card follows with what today's conditions mean for driving (fuel prices) and public transport (rail/bus ridership).
+A quick daily check before you head out in Malaysia. Pick a city and it gives you one verdict — Clear to go, Hazy conditions, Wet weather likely, or Storm risk today — built from that location's forecast, active MET Malaysia warnings, and recent seismic activity, with a "why?" panel to see the reasoning behind it. The 7-day strip uses animated icons matched to each day's actual weather (a bobbing raindrop, a flickering storm bolt, a drifting haze band, a glowing sun), not just a generic forecast grid. A "Getting around today" card follows with what today's conditions mean for driving (fuel prices) and rail (the busiest line, on the last published day).
 
-Six locations: Kuala Lumpur, Penang, Kedah, Perlis, Kelantan, Johor.
+Six cities: Kuala Lumpur, Penang, Kedah, Perlis, Kelantan, Johor.
 
 Built as part of an exercise comparing [data.gov.my](https://data.gov.my) against [data.gov.sg](https://data.gov.sg).
 
